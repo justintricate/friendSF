@@ -299,7 +299,7 @@
           id="tab-game"
           class="px-4 py-2 text-gray-500 border-b-2 border-transparent hover:text-gray-300 font-bold focus:outline-none"
         >
-          In-Game Law
+          League Rules
         </button>
       </div>
       <div id="content-draft" class="block">
@@ -326,16 +326,23 @@
         <ul class="list-disc list-outside pl-5 space-y-3 text-gray-400">
           <li>
             <strong class="text-gray-200">Main Link Rule:</strong> Your drafted
-            skill must be your primary damage source (6-Link).
+            skill must be your primary damage source.
           </li>
           <li>
             <strong class="text-gray-200">Tag Proxy Leveling:</strong> Level
-            with a skill sharing at least 1 Gem Tag until you get your drafted
-            gem.
+            with a skill sharing at least 1 gem tag until you get your drafted
+            gem. (This is to prevent leveling with Rolling Magma and re-speccing
+            at 70, as an example.)
           </li>
           <li>
             <strong class="text-gray-200">Mule Mandate:</strong> Create a mule
-            character if your class cannot buy the gem.
+            character if your class cannot buy the gem. (If applicable.)
+          </li>
+          <li>
+            <strong class="text-gray-200">Siosa:</strong> Once one person
+            reaches the library, others should make a reasonable effort to
+            purchase their gem from that person, assuming it is playable for
+            their level.
           </li>
         </ul>
       </div>
@@ -354,25 +361,25 @@
           class="bg-neutral-900 p-4 rounded border border-neutral-800 flex justify-between items-center"
         >
           <span class="font-bold text-amber-500 text-lg">Austin</span
-          ><span class="text-gray-400 font-mono">PENDING...</span>
+          ><span class="text-gray-400 font-mono">PENDING</span>
         </div>
         <div
           class="bg-neutral-900 p-4 rounded border border-neutral-800 flex justify-between items-center"
         >
           <span class="font-bold text-amber-500 text-lg">Gavin</span
-          ><span class="text-gray-400 font-mono">PENDING...</span>
+          ><span class="text-gray-400 font-mono">PENDING</span>
         </div>
         <div
           class="bg-neutral-900 p-4 rounded border border-neutral-800 flex justify-between items-center"
         >
           <span class="font-bold text-amber-500 text-lg">Justin</span
-          ><span class="text-gray-400 font-mono">PENDING...</span>
+          ><span class="text-gray-400 font-mono">PENDING</span>
         </div>
         <div
           class="bg-neutral-900 p-4 rounded border border-neutral-800 flex justify-between items-center"
         >
           <span class="font-bold text-amber-500 text-lg">Madi</span
-          ><span class="text-gray-400 font-mono">PENDING...</span>
+          ><span class="text-gray-400 font-mono">PENDING</span>
         </div>
       </div>
     </section>
@@ -1030,7 +1037,7 @@
           document.getElementById('controls-green').classList.remove('hidden');
           document.getElementById('controls-blue').classList.remove('hidden');
           document.getElementById('instruction-text').innerText =
-            'Review your gems. Veto illegals, or Risk a reroll.';
+            'Make your choice, or risk a reroll.';
         }, 2100);
       }
 
