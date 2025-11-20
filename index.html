@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FriendSF Draft League</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600&display=swap');
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #0a0a0a;
+        background-image: radial-gradient(
+          circle at center,
+          #1a1a1a 0%,
+          #000000 100%
+        );
+        color: #d1d5db;
+      }
+
+      h1,
+      h2,
+      h3,
+      .poe-font {
+        font-family: 'Cinzel', serif;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1f1f1f;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #555;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #777;
+      }
+
+      .gem-card {
+        transition: all 0.3s ease;
+        border: 1px solid #333;
+      }
+
+      .gem-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        border-color: #555;
+      }
+
+      .spin-animation {
+        animation: spin 0.5s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: translateY(0);
+        }
+        100% {
+          transform: translateY(-20px);
+          opacity: 0.5;
+        }
+      }
+
+      /* Important override for locking visualization */
+      .locked-gem {
+        border: 2px solid #fbbf24 !important; /* Amber-400 */
+        background-color: rgba(40, 30, 10, 0.8) !important;
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3) !important;
+      }
+
+      .dimmed-card {
+        opacity: 0.4;
+        pointer-events: none;
+        filter: grayscale(0.8);
+      }
+
+      .locked-text {
+        color: #fbbf24;
+        text-shadow: 0 0 5px rgba(251, 191, 36, 0.5);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col items-center py-10 px-4">
+    <!-- Header -->
+    <header class="text-center mb-12">
+      <h1
+        class="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-600 mb-4 drop-shadow-lg"
+      >
+        FriendSF Draft
+      </h1>
+      <p class="text-gray-400 max-w-2xl mx-auto text-lg">
+        Spin the wheels. Pick your poison. Challenge the meta.
+      </p>
+    </header>
+
+    <!-- Main Draft Area -->
+    <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+      <!-- RED WHEEL -->
+      <div
+        id="card-red"
+        class="gem-card bg-neutral-900 rounded-xl p-6 flex flex-col items-center relative overflow-hidden min-h-[400px]"
+      >
+        <div
+          class="absolute top-0 left-0 w-full h-1 bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.8)]"
+        ></div>
+        <h2 class="text-red-500 text-2xl font-bold mb-6 tracking-widest">
+          STRENGTH
+        </h2>
+
+        <div
+          id="display-red"
+          class="flex-grow flex flex-col items-center justify-center w-full text-center"
+        >
+          <div class="text-6xl mb-4">🔴</div>
+          <p class="text-gray-500 italic">Waiting to draft...</p>
+        </div>
+
+        <div id="controls-red" class="hidden w-full flex gap-3 mt-6">
+          <button
+            onclick="vetoGem('red')"
+            class="flex-1 py-2 px-2 bg-neutral-800 hover:bg-neutral-700 text-gray-400 hover:text-white rounded border border-neutral-600 transition-colors text-xs uppercase font-bold tracking-wider"
+            title="Respin without penalty (Group Vote)"
+          >
+            Team Veto
+          </button>
+          <button
+            onclick="triggerRiskReroll('red')"
+            class="flex-1 py-2 px-2 bg-red-900 hover:bg-red-800 text-red-100 rounded border border-red-700 transition-colors text-xs uppercase font-bold tracking-wider"
+            title="Reroll & Lock In (Personal Risk)"
+          >
+            Risk It
+          </button>
+        </div>
+        <div
+          id="status-red"
+          class="hidden mt-4 text-xs uppercase tracking-widest font-bold text-red-500"
+        ></div>
+      </div>
+
+      <!-- GREEN WHEEL -->
+      <div
+        id="card-green"
+        class="gem-card bg-neutral-900 rounded-xl p-6 flex flex-col items-center relative overflow-hidden min-h-[400px]"
+      >
+        <div
+          class="absolute top-0 left-0 w-full h-1 bg-green-600 shadow-[0_0_10px_rgba(22,163,74,0.8)]"
+        ></div>
+        <h2 class="text-green-500 text-2xl font-bold mb-6 tracking-widest">
+          DEXTERITY
+        </h2>
+
+        <div
+          id="display-green"
+          class="flex-grow flex flex-col items-center justify-center w-full text-center"
+        >
+          <div class="text-6xl mb-4">🟢</div>
+          <p class="text-gray-500 italic">Waiting to draft...</p>
+        </div>
+
+        <div id="controls-green" class="hidden w-full flex gap-3 mt-6">
+          <button
+            onclick="vetoGem('green')"
+            class="flex-1 py-2 px-2 bg-neutral-800 hover:bg-neutral-700 text-gray-400 hover:text-white rounded border border-neutral-600 transition-colors text-xs uppercase font-bold tracking-wider"
+            title="Respin without penalty (Group Vote)"
+          >
+            Team Veto
+          </button>
+          <button
+            onclick="triggerRiskReroll('green')"
+            class="flex-1 py-2 px-2 bg-green-900 hover:bg-green-800 text-green-100 rounded border border-green-700 transition-colors text-xs uppercase font-bold tracking-wider"
+            title="Reroll & Lock In (Personal Risk)"
+          >
+            Risk It
+          </button>
+        </div>
+        <div
+          id="status-green"
+          class="hidden mt-4 text-xs uppercase tracking-widest font-bold text-green-500"
+        ></div>
+      </div>
+
+      <!-- BLUE WHEEL -->
+      <div
+        id="card-blue"
+        class="gem-card bg-neutral-900 rounded-xl p-6 flex flex-col items-center relative overflow-hidden min-h-[400px]"
+      >
+        <div
+          class="absolute top-0 left-0 w-full h-1 bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.8)]"
+        ></div>
+        <h2 class="text-blue-500 text-2xl font-bold mb-6 tracking-widest">
+          INTELLIGENCE
+        </h2>
+
+        <div
+          id="display-blue"
+          class="flex-grow flex flex-col items-center justify-center w-full text-center"
+        >
+          <div class="text-6xl mb-4">🔵</div>
+          <p class="text-gray-500 italic">Waiting to draft...</p>
+        </div>
+
+        <div id="controls-blue" class="hidden w-full flex gap-3 mt-6">
+          <button
+            onclick="vetoGem('blue')"
+            class="flex-1 py-2 px-2 bg-neutral-800 hover:bg-neutral-700 text-gray-400 hover:text-white rounded border border-neutral-600 transition-colors text-xs uppercase font-bold tracking-wider"
+            title="Respin without penalty (Group Vote)"
+          >
+            Team Veto
+          </button>
+          <button
+            onclick="triggerRiskReroll('blue')"
+            class="flex-1 py-2 px-2 bg-blue-900 hover:bg-blue-800 text-blue-100 rounded border border-blue-700 transition-colors text-xs uppercase font-bold tracking-wider"
+            title="Reroll & Lock In (Personal Risk)"
+          >
+            Risk It
+          </button>
+        </div>
+        <div
+          id="status-blue"
+          class="hidden mt-4 text-xs uppercase tracking-widest font-bold text-blue-500"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex flex-col items-center gap-4 mb-12">
+      <button
+        onclick="startDraft()"
+        id="btn-draft"
+        class="px-12 py-4 bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-white font-bold text-xl rounded shadow-lg transform hover:scale-105 transition-all border border-amber-400 font-serif tracking-wider"
+      >
+        BEGIN THE DRAFT
+      </button>
+      <p
+        id="instruction-text"
+        class="text-gray-500 text-sm mt-2 h-6 font-semibold text-center"
+      ></p>
+    </div>
+
+    <!-- Rules Section with Tabs -->
+    <section
+      class="max-w-3xl w-full bg-neutral-900/50 border border-neutral-800 rounded-lg p-8 mb-12"
+    >
+      <div class="flex border-b border-neutral-700 mb-6">
+        <button
+          onclick="switchTab('draft')"
+          id="tab-draft"
+          class="px-4 py-2 text-amber-500 border-b-2 border-amber-500 font-bold focus:outline-none transition-colors hover:text-amber-400"
+        >
+          Draft Protocol
+        </button>
+        <button
+          onclick="switchTab('game')"
+          id="tab-game"
+          class="px-4 py-2 text-gray-500 border-b-2 border-transparent hover:text-gray-300 font-bold focus:outline-none transition-colors"
+        >
+          In-Game Law
+        </button>
+      </div>
+
+      <!-- Draft Rules Content -->
+      <div id="content-draft" class="block">
+        <ul class="list-disc list-outside pl-5 space-y-3 text-gray-400">
+          <li>
+            <strong class="text-gray-200">The Draft:</strong> You get 3 gems (1
+            Red, 1 Green, 1 Blue). Pick
+            <span class="text-amber-500 font-bold">ONE</span> as your main
+            skill.
+          </li>
+          <li>
+            <strong class="text-gray-200">Team Veto:</strong> If the group
+            agrees a skill is illegal (e.g., someone played it last league),
+            click <em class="text-gray-300">Team Veto</em> to respin that wheel
+            freely.
+          </li>
+          <li>
+            <strong class="text-gray-200">The Risk:</strong> If you hate all
+            your options, you may click <em class="text-red-400">Risk It</em> on
+            ONE color.
+          </li>
+          <li>
+            <strong class="text-gray-200">The Contract:</strong> Clicking
+            <em>Risk It</em>
+            <span class="text-red-500 font-bold">LOCKS</span> you into playing
+            that specific result. No take-backs. No further rerolls.
+          </li>
+          <li>
+            <strong class="text-gray-200">Restrictions:</strong> Meta skills
+            (>0.5% play rate), support gems, golems, and pure utility skills are
+            banned.
+          </li>
+        </ul>
+      </div>
+
+      <!-- Game Rules Content -->
+      <div id="content-game" class="hidden">
+        <ul class="list-disc list-outside pl-5 space-y-3 text-gray-400">
+          <li>
+            <strong class="text-gray-200">Main Link Rule:</strong> Your drafted
+            skill must be your <strong>primary damage source</strong> (your
+            6-Link). You cannot use it as a utility trigger (e.g., putting it on
+            Manaforged Arrows while playing Toxic Rain is illegal).
+          </li>
+          <li>
+            <strong class="text-gray-200">Tag Proxy Leveling:</strong> Before
+            you acquire your drafted skill, you must level with a skill that
+            shares at least <strong>1 Gem Tag</strong> (preferably 2) with your
+            target. <br /><span class="text-xs italic text-gray-500 mt-1 block"
+              >Example: Drafted Exsanguinate (Phys/Spell)? Level with Bladefall
+              (Phys/Spell), not Fireball.</span
+            >
+          </li>
+          <li>
+            <strong class="text-gray-200">Mule Mandate:</strong> If your class
+            cannot buy the gem early, you must create a Level 1 mule
+            (Witch/Shadow etc.) to run to town and stash it for your main
+            character.
+          </li>
+          <li>
+            <strong class="text-gray-200">The Siosa Pact:</strong> The moment
+            one player reaches The Library (Act 3), they become the designated
+            vendor. Everyone should make a reasonable effort to buy their
+            drafted gems from that player immediately.
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- === UPDATE ROSTER HERE === -->
+    <!-- Edit the text inside the <span> tags below to save results -->
+    <section
+      class="max-w-3xl w-full bg-black/40 border border-neutral-800 rounded-lg p-8"
+    >
+      <h3
+        class="text-2xl text-gray-300 font-bold mb-6 border-b border-neutral-800 pb-2 text-center"
+      >
+        League Roster
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Austin -->
+        <div
+          class="bg-neutral-900 p-4 rounded border border-neutral-800 flex justify-between items-center"
+        >
+          <span class="font-bold text-amber-500 text-lg">Austin</span>
+          <span class="text-gray-400 font-mono">PENDING...</span>
+        </div>
+
+        <!-- Gavin -->
+        <div
+          class="bg-neutral-900 p-4 rounded border border-neutral-800 flex justify-between items-center"
+        >
+          <span class="font-bold text-amber-500 text-lg">Gavin</span>
+          <span class="text-gray-400 font-mono">PENDING...</span>
+        </div>
+
+        <!-- Justin -->
+        <div
+          class="bg-neutral-900 p-4 rounded border border-neutral-800 flex justify-between items-center"
+        >
+          <span class="font-bold text-amber-500 text-lg">Justin</span>
+          <span class="text-gray-400 font-mono">PENDING...</span>
+        </div>
+
+        <!-- Madi -->
+        <div
+          class="bg-neutral-900 p-4 rounded border border-neutral-800 flex justify-between items-center"
+        >
+          <span class="font-bold text-amber-500 text-lg">Madi</span>
+          <span class="text-gray-400 font-mono">PENDING...</span>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      // --- GEM DATA POOLS ---
+      // Verified lists with no syntax errors
+      const redPool = [
+        'Absolution',
+        'Absolution of Inspiring',
+        'Bladestorm',
+        'Bladestorm of Uncertainty',
+        'Boneshatter of Carnage',
+        'Boneshatter of Complex Trauma',
+        'Chain Hook',
+        'Cleave',
+        'Cleave of Rage',
+        'Consecrated Path',
+        'Consecrated Path of Endurance',
+        'Crushing Fist',
+        'Divine Retribution',
+        'Dominating Blow',
+        'Dominating Blow of Inspiring',
+        'Earthquake',
+        'Earthquake of Amplification',
+        'Frozen Legion',
+        'Frozen Legion of Rallying',
+        'Glacial Hammer',
+        'Glacial Hammer of Shattering',
+        'Heavy Strike',
+        'Holy Flame Totem',
+        'Holy Flame Totem of Ire',
+        'Ice Crash',
+        'Ice Crash of Cadence',
+        'Infernal Blow',
+        'Infernal Blow of Immolation',
+        'Molten Strike',
+        'Perforate',
+        'Perforate of Bloodshed',
+        'Perforate of Duality',
+        'Searing Bond',
+        'Shield Crush',
+        'Shield Crush of the Chieftain',
+        'Static Strike',
+        'Sunder',
+        'Sunder of Earthbreaking',
+        'Sweep',
+        'Swordstorm',
+        'Tectonic Slam',
+        'Tectonic Slam of Cataclysm',
+        'Vigilant Strike',
+        'Volcanic Fissure',
+        'Volcanic Fissure of Snaking',
+      ];
+
+      const greenPool = [
+        'Ambush',
+        'Animate Weapon',
+        'Animate Weapon of Self Reflection',
+        'Artillery Ballista',
+        'Artillery Ballista of Cross Strafe',
+        'Artillery Ballista of Focus Fire',
+        'Barrage',
+        'Barrage of Volley Fire',
+        'Bear Trap',
+        'Bear Trap of Skewers',
+        'Blade Blast',
+        'Blade Blast of Dagger Detonation',
+        'Blade Blast of Unloading',
+        'Blade Flurry',
+        'Blade Flurry of Incision',
+        'Blade Trap',
+        'Blade Trap of Greatswords',
+        'Blade Trap of Laceration',
+        'Bladefall',
+        'Bladefall of Impaling',
+        'Bladefall of Volleys',
+        'Blast Rain',
+        'Blink Arrow of Bombarding Clones',
+        'Blink Arrow of Prismatic Clones',
+        'Burning Arrow',
+        'Burning Arrow of Vigour',
+        'Caustic Arrow of Poison',
+        'Charged Dash',
+        'Conflagration',
+        'Conversion Trap',
+        'Cremation',
+        'Cremation of Exhuming',
+        'Detonate Dead of Chain Reaction',
+        'Double Strike',
+        'Double Strike of Impaling',
+        'Double Strike of Momentum',
+        'Dual Strike',
+        'Dual Strike of Ambidexterity',
+        'Elemental Hit',
+        'Ethereal Knives',
+        'Ethereal Knives of Lingering Blades',
+        'Ethereal Knives of the Massacre',
+        'Explosive Arrow',
+        'Explosive Concoction',
+        'Explosive Concoction of Destruction',
+        'Explosive Trap',
+        'Explosive Trap of Magnitude',
+        'Explosive Trap of Shrapnel',
+        'Flamethrower Trap',
+        'Frost Blades',
+        'Frost Blades of Katabasis',
+        'Galvanic Arrow',
+        'Galvanic Arrow of Energy',
+        'Galvanic Arrow of Surging',
+        'Glacial Shield Swipe',
+        'Ice Shot',
+        'Ice Shot of Penetration',
+        'Ice Trap',
+        'Ice Trap of Hollowness',
+        'Lacerate',
+        'Lacerate of Butchering',
+        'Lacerate of Haemorrhage',
+        'Lancing Steel',
+        'Lightning Strike',
+        'Mirror Arrow',
+        'Mirror Arrow of Bombarding Clones',
+        'Mirror Arrow of Prismatic Clones',
+        'Pestilent Strike',
+        'Puncture',
+        'Puncture of Shanking',
+        'Rain of Arrows',
+        'Rain of Arrows of Artillery',
+        'Rain of Arrows of Saturation',
+        'Scourge Arrow',
+        'Scourge Arrow of Menace',
+        'Seismic Trap',
+        'Seismic Trap of Swells',
+        'Shattering Steel',
+        'Shattering Steel of Ammunition',
+        'Shrapnel Ballista',
+        'Shrapnel Ballista of Steel',
+        'Siege Ballista',
+        'Siege Ballista of Splintering',
+        'Snipe',
+        'Spectral Helix',
+        'Spectral Shield Throw',
+        'Spectral Shield Throw of Shattering',
+        'Spectral Throw',
+        'Spectral Throw of Materialising',
+        'Split Arrow',
+        'Split Arrow of Splitting',
+        'Splitting Steel',
+        'Splitting Steel of Ammunition',
+        'Storm Rain',
+        'Storm Rain of the Conduit',
+        'Storm Rain of the Fence',
+        'Thunderstorm',
+        'Tornado of Elemental Turbulence',
+        'Viper Strike',
+        'Wild Strike',
+        'Wild Strike of Extremes',
+      ];
+
+      const bluePool = [
+        'Arc',
+        'Arc of Oscillating',
+        'Arc of Surging',
+        'Armageddon Brand',
+        'Armageddon Brand of Recall',
+        'Armageddon Brand of Volatility',
+        'Ball Lightning',
+        'Ball Lightning of Orbiting',
+        'Ball Lightning of Static',
+        'Bane',
+        'Bane of Condemnation',
+        'Blazing Salvo',
+        'Blight',
+        'Blight of Atrophy',
+        'Blight of Contagion',
+        'Bodyswap',
+        'Bodyswap of Sacrifice',
+        'Cold Snap',
+        'Cold Snap of Power',
+        'Contagion of Subsiding',
+        'Contagion of Transference',
+        'Crackling Lance',
+        'Crackling Lance of Branching',
+        'Crackling Lance of Disintegration',
+        'Creeping Frost',
+        'Dark Pact',
+        'Detonate Dead',
+        'Discharge',
+        'Discharge of Misery',
+        'Divine Ire',
+        'Divine Ire of Disintegration',
+        'Divine Ire of Holy Lightning',
+        'Essence Drain',
+        'Essence Drain of Desperation',
+        'Essence Drain of Wickedness',
+        'Eye of Winter',
+        'Eye of Winter of Finality',
+        'Eye of Winter of Transience',
+        'Fireball',
+        'Firestorm',
+        'Firestorm of Meteors',
+        'Firestorm of Pelting',
+        'Flame Surge',
+        'Flame Surge of Combusting',
+        'Flameblast',
+        'Flameblast of Celerity',
+        'Flameblast of Contraction',
+        'Flame Dash of Return',
+        'Forbidden Rite',
+        'Freezing Pulse',
+        'Frost Bomb',
+        'Frost Bomb of Forthcoming',
+        'Frost Bomb of Instability',
+        'Frostblink of Wintry Blast',
+        'Frostbolt',
+        'Galvanic Field',
+        'Galvanic Field of Intensity',
+        'Glacial Cascade',
+        'Glacial Cascade of the Fissure',
+        'Hexblast',
+        'Hexblast of Contradiction',
+        'Hexblast of Havoc',
+        'Ice Nova',
+        'Ice Nova of Deep Freeze',
+        'Ice Spear',
+        'Icicle Mine of Fanning',
+        'Icicle Mine of Sabotage',
+        'Incinerate',
+        'Incinerate of Expanse',
+        'Incinerate of Venting',
+        'Kinetic Bolt',
+        'Kinetic Bolt of Fragmentation',
+        'Kinetic Rain',
+        'Kinetic Rain of Impact',
+        'Lightning Conduit',
+        'Lightning Conduit of the Heavens',
+        'Lightning Spire Trap',
+        'Lightning Spire Trap of Overloading',
+        'Lightning Spire Trap of Zapping',
+        'Lightning Tendrils',
+        'Lightning Tendrils of Eccentricity',
+        'Lightning Tendrils of Escalation',
+        'Lightning Trap',
+        'Lightning Trap of Sparking',
+        'Magma Orb',
+        'Manabond',
+        'Orb of Storms',
+        'Penance Brand',
+        'Penance Brand of Conduction',
+        'Power Siphon',
+        'Power Siphon of the Archmage',
+        'Purifying Flame',
+        'Purifying Flame of Revelations',
+        'Pyroclast Mine',
+        'Pyroclast Mine of Sabotage',
+        'Raise Zombie',
+        'Raise Zombie of Falling',
+        'Raise Zombie of Slamming',
+        'Scorching Ray',
+        'Scorching Ray of Immolation',
+        'Siphoning Trap',
+        'Somatic Shell',
+        'Soulrend',
+        'Soulrend of Reaping',
+        'Soulrend of the Spiral',
+        'Spark',
+        'Spark of Unpredictability',
+        'Storm Brand',
+        'Storm Brand of Indecision',
+        'Storm Burst',
+        'Storm Call',
+        'Stormbind',
+        'Stormbind of Teleportation',
+        'Stormblast Mine',
+        'Summon Reaper',
+        'Summon Reaper of Eviscerating',
+        'Summon Reaper of Revenants',
+        'Summon Skeletons',
+        'Summon Skeletons of Archers',
+        'Summon Skeletons of Mages',
+        'Tempest Shield',
+        'Voltaxic Burst',
+        'Vortex',
+        'Vortex of Projection',
+        'Winter Orb',
+        'Wintertide Brand',
+      ];
+
+      let hasRerolled = false;
+
+      function startDraft() {
+        resetUI();
+        hasRerolled = false;
+
+        document.getElementById('btn-draft').innerText = 'Redrafting...';
+        document.getElementById('btn-draft').disabled = true;
+        document.getElementById('instruction-text').innerText =
+          'Fate is spinning...';
+
+        spinWheel('red', redPool, 1000);
+        spinWheel('green', greenPool, 1500);
+        spinWheel('blue', bluePool, 2000);
+
+        setTimeout(() => {
+          document.getElementById('btn-draft').innerText = 'Draft Again';
+          document.getElementById('btn-draft').disabled = false;
+
+          // Show Control buttons
+          document.getElementById('controls-red').classList.remove('hidden');
+          document.getElementById('controls-green').classList.remove('hidden');
+          document.getElementById('controls-blue').classList.remove('hidden');
+          document.getElementById('instruction-text').innerText =
+            'Review your gems. Veto illegals, or Risk a reroll.';
+        }, 2100);
+      }
+
+      function spinWheel(color, pool, duration) {
+        const display = document.getElementById(`display-${color}`);
+        let startTime = null;
+
+        function animate(timestamp) {
+          if (!startTime) startTime = timestamp;
+          const progress = timestamp - startTime;
+
+          // Random temp gem for animation
+          const randomGem = pool[Math.floor(Math.random() * pool.length)];
+          display.innerHTML = `<div class="text-xl text-gray-500 opacity-70 spin-animation">${randomGem}</div>`;
+
+          if (progress < duration) {
+            requestAnimationFrame(animate);
+          } else {
+            // Final Selection
+            const finalGem = pool[Math.floor(Math.random() * pool.length)];
+            displayGem(color, finalGem);
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+
+      function displayGem(color, gemName) {
+        const display = document.getElementById(`display-${color}`);
+        // PoE Wiki URLs use underscores for spaces
+        const wikiLink = `https://www.poewiki.net/wiki/${gemName.replace(
+          / /g,
+          '_'
+        )}`;
+
+        display.innerHTML = `
+                <a href="${wikiLink}" target="_blank" class="group">
+                    <div class="text-3xl md:text-4xl font-bold text-${color}-400 group-hover:text-${color}-300 transition-colors text-center px-2 leading-tight">
+                        ${gemName}
+                    </div>
+                    <div class="text-xs text-gray-500 mt-2 group-hover:text-gray-300">View Wiki ↗</div>
+                </a>
+            `;
+      }
+
+      function getPool(color) {
+        if (color === 'red') return redPool;
+        if (color === 'green') return greenPool;
+        if (color === 'blue') return bluePool;
+        return [];
+      }
+
+      function vetoGem(color) {
+        if (hasRerolled) return; // Cannot veto if contract is sealed
+
+        const pool = getPool(color);
+        // Quick spin for Veto
+        spinWheel(color, pool, 800);
+      }
+
+      function triggerRiskReroll(color) {
+        if (hasRerolled) return;
+
+        try {
+          if (
+            !confirm(
+              `CONTRACT WARNING:\n\nAre you sure you want to reroll ${color.toUpperCase()}?\n\n1. You will be FORCED to play the new result.\n2. All other gems will be locked.\n3. You cannot go back.`
+            )
+          ) {
+            return;
+          }
+        } catch (e) {
+          console.error('Confirm dialog failed or blocked', e);
+        }
+
+        hasRerolled = true;
+
+        // 1. Hide all interaction buttons
+        document.getElementById('controls-red').classList.add('hidden');
+        document.getElementById('controls-green').classList.add('hidden');
+        document.getElementById('controls-blue').classList.add('hidden');
+
+        // 2. Hide main draft button
+        document.getElementById('btn-draft').classList.add('hidden');
+
+        // 3. Dim other cards
+        const colors = ['red', 'green', 'blue'];
+        colors.forEach((c) => {
+          if (c !== color) {
+            document.getElementById(`card-${c}`).classList.add('dimmed-card');
+          }
+        });
+
+        // 4. Spin specific wheel longer
+        const pool = getPool(color);
+        spinWheel(color, pool, 2000);
+
+        // 5. Lock UI after spin completes
+        setTimeout(() => {
+          lockSelection(color);
+        }, 2100);
+      }
+
+      function lockSelection(chosenColor) {
+        const card = document.getElementById(`card-${chosenColor}`);
+        const status = document.getElementById(`status-${chosenColor}`);
+
+        // Apply visual lock
+        card.classList.add('locked-gem');
+        card.classList.remove('dimmed-card'); // Ensure selected isn't dimmed
+
+        status.innerText = 'CONTRACT SEALED';
+        status.classList.remove('hidden');
+        status.classList.add('locked-text');
+
+        document.getElementById(
+          'instruction-text'
+        ).innerHTML = `<span class="text-amber-500 font-bold">GLORY OR DEATH.</span> You are bound to this choice.`;
+      }
+
+      function resetUI() {
+        const colors = ['red', 'green', 'blue'];
+        colors.forEach((c) => {
+          const card = document.getElementById(`card-${c}`);
+          const status = document.getElementById(`status-${c}`);
+          card.classList.remove('locked-gem');
+          card.classList.remove('dimmed-card');
+          status.classList.add('hidden');
+          status.innerText = '';
+          // Hide controls initially
+          document.getElementById(`controls-${c}`).classList.add('hidden');
+        });
+        document.getElementById('btn-draft').classList.remove('hidden');
+        document.getElementById('instruction-text').innerText = '';
+        hasRerolled = false;
+      }
+
+      function switchTab(tab) {
+        const draftTab = document.getElementById('tab-draft');
+        const gameTab = document.getElementById('tab-game');
+
+        if (tab === 'draft') {
+          draftTab.classList.add('text-amber-500', 'border-amber-500');
+          draftTab.classList.remove('text-gray-500', 'border-transparent');
+
+          gameTab.classList.add('text-gray-500', 'border-transparent');
+          gameTab.classList.remove('text-amber-500', 'border-amber-500');
+
+          document.getElementById('content-draft').classList.remove('hidden');
+          document.getElementById('content-game').classList.add('hidden');
+        } else {
+          gameTab.classList.add('text-amber-500', 'border-amber-500');
+          gameTab.classList.remove('text-gray-500', 'border-transparent');
+
+          draftTab.classList.add('text-gray-500', 'border-transparent');
+          draftTab.classList.remove('text-amber-500', 'border-amber-500');
+
+          document.getElementById('content-game').classList.remove('hidden');
+          document.getElementById('content-draft').classList.add('hidden');
+        }
+      }
+    </script>
+  </body>
+</html>
